@@ -19,3 +19,17 @@ assert relations that must hold for any correct pricer -- put-call parity,
 arbitrage bounds, monotonicity in spot and vol. Reference values are retained
 as a single anchor to catch globally consistent errors that still satisfy
 every arbitrage relation.
+
+
+## D-005: Compute the put with N(-d) rather than 1 - N(d)
+Alternative: derive the put from the call via put-call parity, or use 1-N(d).
+For large d, N(d) rounds to 1.0 and 1-N(d) loses all significant digits to
+catastrophic cancellation. N(-d) evaluates the tail directly and stays
+accurate into the far tails, which matters for deep OTM strikes.
+
+## D-006: Handle sigma*sqrt(T)=0 as an explicit branch
+Alternative: rely on limiting behaviour of the normal CDF.
+When total uncertainty is zero the terminal price is deterministic and the
+option is worth discounted intrinsic value. Branching explicitly avoids a
+0/0 in d1 and makes the degenerate case a documented behaviour rather than
+an accident of floating-point handling.
