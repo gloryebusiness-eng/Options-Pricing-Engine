@@ -1,3 +1,5 @@
+[![tests](https://github.com/gloryebusiness-eng/Options-Pricing-Engine/actions/workflows/tests.yml/badge.svg)](https://github.com/gloryebusiness-eng/Options-Pricing-Engine/actions/workflows/tests.yml)
+
 # Options Pricing Engine
 
 European option pricing under Black-Scholes-Merton, with analytical Greeks,

@@ -116,9 +116,7 @@ def clean_chain(
     df["moneyness"] = spot / df["strike"]
 
     before = len(df)
-    df = df[
-        (df["moneyness"] >= min_moneyness) & (df["moneyness"] <= max_moneyness)
-    ]
+    df = df[(df["moneyness"] >= min_moneyness) & (df["moneyness"] <= max_moneyness)]
     log["outside_moneyness_band"] = before - len(df)
 
     if "openInterest" in df.columns:
@@ -158,9 +156,7 @@ def fetch_chain(
 
     option_type = option_type.lower()
     if option_type not in ("call", "put"):
-        raise ValueError(
-            f"option_type must be 'call' or 'put', got {option_type!r}"
-        )
+        raise ValueError(f"option_type must be 'call' or 'put', got {option_type!r}")
 
     ticker = yf.Ticker(symbol)
     expiries = ticker.options
@@ -169,9 +165,7 @@ def fetch_chain(
         raise ValueError(f"no listed option expiries found for {symbol!r}")
 
     now_naive = pd.Timestamp.now().normalize()
-    days_out = np.array(
-        [(pd.Timestamp(e) - now_naive).days for e in expiries], dtype=float
-    )
+    days_out = np.array([(pd.Timestamp(e) - now_naive).days for e in expiries], dtype=float)
     expiry = expiries[int(np.argmin(np.abs(days_out - target_tenor_days)))]
 
     chain = ticker.option_chain(expiry)
@@ -198,9 +192,8 @@ def fetch_chain(
         filter_log=log,
     )
 
-def _drop_vertical_spread_violations(
-    df: pd.DataFrame, option_type: str
-) -> pd.DataFrame:
+
+def _drop_vertical_spread_violations(df: pd.DataFrame, option_type: str) -> pd.DataFrame:
     """Remove quotes inconsistent with neighbouring strikes.
 
     A call price must be non-increasing in strike, and may fall by at most
@@ -256,9 +249,7 @@ def fetch_otm_chain(
         raise ValueError(f"no listed option expiries found for {symbol!r}")
 
     now_naive = pd.Timestamp.now().normalize()
-    days_out = np.array(
-        [(pd.Timestamp(e) - now_naive).days for e in expiries], dtype=float
-    )
+    days_out = np.array([(pd.Timestamp(e) - now_naive).days for e in expiries], dtype=float)
     expiry = expiries[int(np.argmin(np.abs(days_out - target_tenor_days)))]
 
     chain = ticker.option_chain(expiry)
@@ -273,17 +264,13 @@ def fetch_otm_chain(
     tenor = max((expiry_date - now).days / 365.0, 1.0 / 365.0)
 
     puts, put_log = clean_chain(chain.puts[chain.puts["strike"] < spot], spot, "put")
-    calls, call_log = clean_chain(
-        chain.calls[chain.calls["strike"] >= spot], spot, "call"
-    )
+    calls, call_log = clean_chain(chain.calls[chain.calls["strike"] >= spot], spot, "call")
 
     puts["option_type"] = "put"
     calls["option_type"] = "call"
 
     combined = (
-        pd.concat([puts, calls], ignore_index=True)
-        .sort_values("strike")
-        .reset_index(drop=True)
+        pd.concat([puts, calls], ignore_index=True).sort_values("strike").reset_index(drop=True)
     )
 
     merged_log = {f"put_{k}": v for k, v in put_log.items()}

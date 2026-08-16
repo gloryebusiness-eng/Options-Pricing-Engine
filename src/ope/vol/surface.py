@@ -72,7 +72,7 @@ def build_smile(
         }
 
         try:
-           result = implied_vol(
+            result = implied_vol(
                 market_price,
                 snapshot.spot,
                 strike,

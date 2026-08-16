@@ -14,10 +14,10 @@ where naive implementations fail numerically.
 import math
 
 import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from ope.models.black_scholes import bs_price
-
 
 # Parameter ranges span realistic markets: penny stocks to index levels,
 # one week to five years, negative-to-elevated rates, and vol from a quiet

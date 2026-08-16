@@ -14,13 +14,12 @@ double precision, error is minimised near h ~ eps^(1/3), giving a relative
 bump on the order of 1e-5.
 """
 
-import numpy as np
 import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from ope.models.black_scholes import bs_price
 from ope.models.greeks import delta, gamma, rho, theta, vega
-
 
 # Extreme moneyness is excluded here: Greeks decay toward zero in the deep
 # tails, where a relative-tolerance comparison is uninformative. Correctness
@@ -105,11 +104,14 @@ def test_theta_matches_finite_difference(S, K, T, r, sigma, option_type):
     divided by 365 to convert from annual to daily.
     """
     analytic = theta(S, K, T, r, sigma, option_type=option_type)
-    numeric = -central_difference(
-        lambda t: bs_price(S, K, t, r, sigma, option_type=option_type),
-        T,
-        T * 1e-5,
-    ) / 365.0
+    numeric = (
+        -central_difference(
+            lambda t: bs_price(S, K, t, r, sigma, option_type=option_type),
+            T,
+            T * 1e-5,
+        )
+        / 365.0
+    )
 
     assert analytic == pytest.approx(numeric, rel=1e-4, abs=1e-8)
 
@@ -137,12 +139,8 @@ def test_gamma_and_vega_are_type_independent(S, K, T, r, sigma):
     zero second derivative in S and no dependence on sigma, so differencing
     the two option types eliminates both Greeks.
     """
-    assert gamma(S, K, T, r, sigma) == pytest.approx(
-        gamma(S, K, T, r, sigma), rel=1e-12
-    )
-    assert vega(S, K, T, r, sigma) == pytest.approx(
-        vega(S, K, T, r, sigma), rel=1e-12
-    )
+    assert gamma(S, K, T, r, sigma) == pytest.approx(gamma(S, K, T, r, sigma), rel=1e-12)
+    assert vega(S, K, T, r, sigma) == pytest.approx(vega(S, K, T, r, sigma), rel=1e-12)
 
 
 @given(S=spot, K=strike, T=tenor, r=rate, sigma=vol)

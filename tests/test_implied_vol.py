@@ -19,7 +19,8 @@ vacuous near the money or unsatisfiable in the wings.
 import math
 
 import pytest
-from hypothesis import assume, given, settings, strategies as st
+from hypothesis import assume, given, settings
+from hypothesis import strategies as st
 
 from ope.models.black_scholes import bs_price
 from ope.models.greeks import vega as bs_vega
@@ -99,9 +100,7 @@ def test_deep_wing_volatility_is_not_identifiable(moneyness):
     K = S / moneyness
 
     price = bs_price(S, K, T, r, sigma, option_type="call")
-    result = implied_vol(
-        price, S, K, T, r, option_type="call", return_diagnostics=True
-    )
+    result = implied_vol(price, S, K, T, r, option_type="call", return_diagnostics=True)
 
     assert not result.identifiable
     assert result.vega < 1e-6

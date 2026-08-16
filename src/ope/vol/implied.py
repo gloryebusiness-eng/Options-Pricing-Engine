@@ -105,9 +105,7 @@ def _arbitrage_bounds(
     return max(discounted_strike - S, 0.0), discounted_strike
 
 
-def _initial_guess(
-    price: float, S: float, K: float, T: float, r: float, option_type: str
-) -> float:
+def _initial_guess(price: float, S: float, K: float, T: float, r: float, option_type: str) -> float:
     """Corrado-Miller approximation to the implied volatility.
 
     Brenner-Subrahmanyam, sigma ~ (price/S)*sqrt(2*pi/T), is derived at the
@@ -212,9 +210,7 @@ def implied_vol(
     """
     option_type = option_type.lower()
     if option_type not in ("call", "put"):
-        raise ValueError(
-            f"option_type must be 'call' or 'put', got {option_type!r}"
-        )
+        raise ValueError(f"option_type must be 'call' or 'put', got {option_type!r}")
 
     if not math.isfinite(price):
         raise ImpliedVolError(f"price must be finite, got {price}")
@@ -260,14 +256,10 @@ def implied_vol(
         # residual: the latter is not scale-free and is satisfied trivially
         # wherever the option price is itself smaller than the tolerance.
         if abs(step) < sigma_tolerance:
-            result = _build_result(
-                sigma, S, K, T, r, price, option_type, iterations, "newton"
-            )
+            result = _build_result(sigma, S, K, T, r, price, option_type, iterations, "newton")
             return result if return_diagnostics else result.volatility
 
-    return _solve_by_bracketing(
-        price, S, K, T, r, option_type, iterations, return_diagnostics
-    )
+    return _solve_by_bracketing(price, S, K, T, r, option_type, iterations, return_diagnostics)
 
 
 def _solve_by_bracketing(
@@ -306,11 +298,8 @@ def _solve_by_bracketing(
         )
     except (ValueError, RuntimeError) as exc:
         raise ImpliedVolError(
-            f"no volatility in [{VOL_LOWER_BOUND}, {VOL_UPPER_BOUND}] "
-            f"reproduces price {price:.6g}"
+            f"no volatility in [{VOL_LOWER_BOUND}, {VOL_UPPER_BOUND}] reproduces price {price:.6g}"
         ) from exc
 
-    result = _build_result(
-        sigma, S, K, T, r, price, option_type, newton_iterations, "brent"
-    )
+    result = _build_result(sigma, S, K, T, r, price, option_type, newton_iterations, "brent")
     return result if return_diagnostics else result.volatility

@@ -92,9 +92,7 @@ def bs_price(
     """
     option_type = option_type.lower()
     if option_type not in ("call", "put"):
-        raise ValueError(
-            f"option_type must be 'call' or 'put', got {option_type!r}"
-        )
+        raise ValueError(f"option_type must be 'call' or 'put', got {option_type!r}")
 
     S, K, T, r, sigma = (np.asarray(x, dtype=float) for x in (S, K, T, r, sigma))
 

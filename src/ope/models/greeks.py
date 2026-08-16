@@ -38,9 +38,7 @@ DAYS_PER_YEAR = 365.0
 def _validate(option_type: str) -> str:
     option_type = option_type.lower()
     if option_type not in ("call", "put"):
-        raise ValueError(
-            f"option_type must be 'call' or 'put', got {option_type!r}"
-        )
+        raise ValueError(f"option_type must be 'call' or 'put', got {option_type!r}")
     return option_type
 
 

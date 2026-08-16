@@ -39,24 +39,38 @@ def plot_smile(
     fig, ax = plt.subplots(figsize=(11, 6.5))
 
     ax.plot(
-        puts["strike"], puts["implied_vol"] * 100,
-        marker="o", markersize=3, linewidth=1.4,
-        color="#C0392B", label="Puts (OTM below spot)",
+        puts["strike"],
+        puts["implied_vol"] * 100,
+        marker="o",
+        markersize=3,
+        linewidth=1.4,
+        color="#C0392B",
+        label="Puts (OTM below spot)",
     )
     ax.plot(
-        calls["strike"], calls["implied_vol"] * 100,
-        marker="o", markersize=3, linewidth=1.4,
-        color="#2471A3", label="Calls (OTM above spot)",
+        calls["strike"],
+        calls["implied_vol"] * 100,
+        marker="o",
+        markersize=3,
+        linewidth=1.4,
+        color="#2471A3",
+        label="Calls (OTM above spot)",
     )
 
     ax.axvline(
-        snapshot.spot, color="#555555", linestyle="--", linewidth=1.1,
+        snapshot.spot,
+        color="#555555",
+        linestyle="--",
+        linewidth=1.1,
         label=f"Spot = {snapshot.spot:.2f}",
     )
 
     flat = usable["implied_vol"].median() * 100
     ax.axhline(
-        flat, color="#7F8C8D", linestyle=":", linewidth=1.1,
+        flat,
+        color="#7F8C8D",
+        linestyle=":",
+        linewidth=1.1,
         label="Black-Scholes prediction (constant sigma)",
     )
 
