@@ -33,3 +33,39 @@ When total uncertainty is zero the terminal price is deterministic and the
 option is worth discounted intrinsic value. Branching explicitly avoids a
 0/0 in d1 and makes the degenerate case a documented behaviour rather than
 an accident of floating-point handling.
+
+## D-007: Verify analytical Greeks against finite differences
+Alternative: assert against published reference values per Greek.
+Each closed-form Greek is compared to a central-difference derivative of the
+pricer. Agreement between a hand-derived expression and a numerical
+derivative of an independent implementation is strong correctness evidence:
+a calculus error would have to reproduce identically along two unrelated
+paths. Relative bump sizes near 1e-5 balance truncation against cancellation.
+
+## D-008: Theta returned per calendar day, vega and rho per unit
+Alternative: return all Greeks as raw annualised derivatives.
+Theta is divided by 365 to match desk quoting, where it represents one day's
+decay and is negative for long options. Vega and rho are left per unit change
+so they compare directly against finite differences; per-point scaling is a
+presentation concern.
+
+## D-011: Convergence assessed on the sigma step, not the price residual
+Alternative: absolute tolerance on |BS(sigma) - market_price|.
+A price tolerance is not scale-free. For a deep OTM option priced at 1e-55,
+any sigma satisfies a 1e-8 price tolerance on the first evaluation, and the
+solver returns its initial guess unchanged. The change in sigma between
+iterations asks the right question -- has the answer stopped moving -- and
+behaves identically across moneyness.
+
+## D-012: Report identifiability rather than returning a confident number
+Alternative: return the root and let callers assume it is meaningful.
+Vega is the condition number of the inversion, since d(sigma)/d(price) is
+1/vega. For deep wings vega falls to ~1e-57, so every volatility in a wide
+range reproduces the observed price to machine precision and no implied
+volatility exists to recover. The solver returns the root but flags it, since
+a wrong number is indistinguishable from a right one downstream. Surface
+construction filters on this flag.
+
+Discovered when a round-trip test failed in the deep wings. The test was
+asserting a property the problem does not have; the fix was to correct the
+test's premise and add the missing diagnostic, not to loosen the tolerance.
