@@ -69,3 +69,24 @@ construction filters on this flag.
 Discovered when a round-trip test failed in the deep wings. The test was
 asserting a property the problem does not have; the fix was to correct the
 test's premise and add the missing diagnostic, not to loosen the tolerance.
+
+## D-013: Build the smile from out-of-the-money contracts only
+Alternative: use calls across all strikes.
+In-the-money options hold most of their premium as intrinsic value, so the
+time value carrying the volatility signal is a small residual that quote
+error dominates. Observed on live SPY data: ITM call quotes violated the
+vertical spread bound -1 <= dC/dK <= 0 by a factor of five, and the recovered
+IV curve sloped the wrong way across the ITM wing. Puts below spot and calls
+above it keep every contract's premium entirely time value.
+
+## D-014: Filter on vertical spread arbitrage across adjacent strikes
+Alternative: rely on per-quote spread and open-interest filters.
+Individually plausible quotes can be jointly inconsistent. Only the relation
+between neighbouring strikes reveals staleness, and violations of the
+monotonicity bounds are direct arbitrage rather than marginal mispricing.
+
+## D-015: Dividends are not modelled (known bias)
+The pricer assumes a non-dividend-paying underlying. SPY yields roughly 1.1%,
+which depresses calls and lifts puts, tilting recovered implied volatilities
+systematically. Merton's q extension is the correction; recording the bias
+explicitly rather than presenting the surface as unbiased.
