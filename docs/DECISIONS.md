@@ -90,3 +90,13 @@ The pricer assumes a non-dividend-paying underlying. SPY yields roughly 1.1%,
 which depresses calls and lifts puts, tilting recovered implied volatilities
 systematically. Merton's q extension is the correction; recording the bias
 explicitly rather than presenting the surface as unbiased.
+
+## D-016: Corrado-Miller initial guess in place of Brenner-Subrahmanyam
+Alternative: keep the ATM approximation and accept the fallback rate.
+Brenner-Subrahmanyam is derived at the money and degrades badly in the wings:
+on live SPY data it drove a 68% handoff to the bracketed solver, not because
+vega had collapsed but because the starting point was far enough off that
+Newton's first step escaped the search bracket. Corrado-Miller adds a
+correction in the forward moneyness and stays usable across the wings. The
+recovered volatilities are unchanged; what changes is which solver reaches
+them. Guaranteed convergence is retained, since Brent remains behind it.

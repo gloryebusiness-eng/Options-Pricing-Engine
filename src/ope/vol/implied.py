@@ -105,15 +105,52 @@ def _arbitrage_bounds(
     return max(discounted_strike - S, 0.0), discounted_strike
 
 
-def _initial_guess(price: float, S: float, T: float) -> float:
-    """Brenner-Subrahmanyam approximation.
+def _initial_guess(
+    price: float, S: float, K: float, T: float, r: float, option_type: str
+) -> float:
+    """Corrado-Miller approximation to the implied volatility.
 
-    At the money the price is nearly linear in sigma; inverting that gives
-    sigma ~ (price/S)*sqrt(2*pi/T). Accuracy degrades away from the money,
-    but Newton recovers quickly from an approximate start.
+    Brenner-Subrahmanyam, sigma ~ (price/S)*sqrt(2*pi/T), is derived at the
+    money and degrades quickly away from it: for a strike 23% out of the money
+    it returns a value near the clamp floor while the true volatility is
+    several times larger. Newton started from there overshoots the search
+    bracket on its first step and hands off to the bracketed solver, which
+    converges correctly but far more slowly.
+
+    Corrado-Miller adds a correction term in the forward moneyness
+    (S - K*exp(-rT)), which is the information the at-the-money derivation
+    discards. It remains usable across the wings and reduces the fallback rate
+    substantially.
+
+    The discriminant can go negative for prices near the arbitrage bounds,
+    where the quadratic has no real root. Brenner-Subrahmanyam is used as a
+    backstop in that case; it is a poor guess but a finite one, and the
+    bracketed solver remains available behind it.
+
+    Puts are converted to the equivalent call price via put-call parity, since
+    the approximation is derived for calls.
     """
-    guess = (price / S) * math.sqrt(2.0 * math.pi / T)
-    return min(max(guess, 0.05), 2.0)
+    discounted_strike = K * math.exp(-r * T)
+
+    if option_type == "put":
+        price = price + S - discounted_strike
+
+    moneyness_gap = S - discounted_strike
+    average = (S + discounted_strike) / 2.0
+
+    discriminant = (price - moneyness_gap / 2.0) ** 2 - (moneyness_gap**2) / math.pi
+
+    if discriminant < 0.0:
+        fallback = (price / S) * math.sqrt(2.0 * math.pi / T)
+        return min(max(fallback, 0.01), 3.0)
+
+    guess = (
+        math.sqrt(2.0 * math.pi / T)
+        / average
+        * (price - moneyness_gap / 2.0 + math.sqrt(discriminant))
+    )
+
+    return min(max(guess, 0.01), 3.0)
 
 
 def _build_result(
@@ -195,7 +232,7 @@ def implied_vol(
             "no volatility reproduces this price"
         )
 
-    sigma = _initial_guess(price, S, T)
+    sigma = sigma = _initial_guess(price, S, K, T, r, option_type)
     iterations = 0
 
     for iterations in range(1, max_iterations + 1):
